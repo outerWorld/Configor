@@ -7,18 +7,17 @@
 #include "configor.h"
 
 int main(int argc, char *argv[]) {
-	Configor* config = NULL;
-
 	if (argc < 2) {
 		return 1;
 	}
 
 	std::string conf_file(argv[1]);
 
-	config = Configor::GetInstance(conf_file);
+	Configor& config = Configor::GetInstance(conf_file);
 
+	std::cout << "after GetInstance of Configor" << std::endl;
 	while (1) {
-		config->Status();
+		config.Status();
 		sleep(5);
 	}
 

@@ -1,28 +1,30 @@
-
 #include "ini_file.h"
 
 #include "configor.h"
 
 std::string Configor::name_("Configor");
 std::string Configor::desc_("a management module for configuration");
+bool Configor::ready_ = false;
+pthread_mutex_t Configor::ready_locker_ = PTHREAD_MUTEX_INITIALIZER;
 
 Configor::Configor() {
 	pthread_mutex_init(&reg_locker_, NULL);
+	pthread_mutex_init(&ready_locker_, NULL);
 	cur_config_index_ = 0;
 }
 
 Configor::~Configor() {
 }
 
-Configor* Configor::GetInstance(std::string& conf_file) {
-	static Configor* configor = NULL;
+Configor& Configor::GetInstance(std::string& conf_file) {
+	static Configor configor;
 
-	if (NULL == configor) {
-		configor = new Configor();
-		bool ret = configor->Init(conf_file); 
-		if (true != ret) {
-			delete configor;
-			configor = NULL;
+	if (false == configor.ready()) {
+		bool ret = configor.Init(conf_file); 
+		if (true == ret) {
+			configor.set_ready(true);
+		} else {
+			configor.set_ready(false);
 		}
 	}
 

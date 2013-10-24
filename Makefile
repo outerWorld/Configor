@@ -1,5 +1,6 @@
 CC=g++
-CFLAGS=-I./ -fPIC
+DEBUG=
+CFLAGS=-I./ -fPIC $(DEBUG)
 LFLAGS=-lpthread
 AR=ar
 AR_OPT=-rcs

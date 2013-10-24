@@ -51,24 +51,30 @@ class ConfigRegInfo {
 };
 
 class Configor {
+ private:
 	class Config {
 	 public:
 		int32_t				check_interval_us_;
 		int32_t				retry_interval_us_;
 		int32_t				retry_max_times_;
 	};
- public:
-	static Configor* GetInstance(std::string& conf_file);
 
 	bool Init(std::string& conf_file);
-
-	bool Reg(ConfigRegInfo& reg_info);
 
 	static bool IsFileUpdated(std::string& file, uint32_t last_time, uint32_t& new_time);
 
 	static void * CheckCb(void *);
 
 	static bool Reload(void*, std::string&);
+
+ public:
+	static Configor& GetInstance(std::string& conf_file);
+
+	bool IsReady() {
+		return ready_;
+	}
+
+	bool Reg(ConfigRegInfo& reg_info);
 
 	int32_t cur_config_index() { return cur_config_index_; }
 
@@ -101,6 +107,22 @@ class Configor {
 	Configor();
 	virtual ~Configor();
 
+	bool ready() {
+		if (false == ready_) {
+			pthread_mutex_lock(&ready_locker_);
+		}
+
+		return ready_;
+	}
+
+	void set_ready(bool value) {
+		if (false == ready_) {
+			pthread_mutex_unlock(&ready_locker_);
+		}
+
+		ready_ = value;
+	}
+
  private:
 	pthread_mutex_t				reg_locker_;
 	pthread_t					check_tid_;
@@ -110,6 +132,9 @@ class Configor {
 	Config 				configs_[2];
 
 	int32_t				cur_config_index_;
+
+	static bool				ready_;
+	static pthread_mutex_t	ready_locker_;
 
 	static std::string	name_;
 	static std::string	desc_;
