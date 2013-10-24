@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
 
 	std::string conf_file(argv[1]);
 
-	Configor& config = Configor::GetInstance(conf_file);
+	Configor& config = Configor::GetInstance(conf_file.c_str());
 	if (false == config.IsReady()) {
 		return 1;
 	}

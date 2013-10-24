@@ -16,7 +16,7 @@ Configor::Configor() {
 Configor::~Configor() {
 }
 
-Configor& Configor::GetInstance(std::string& conf_file) {
+Configor& Configor::GetInstance(const char* conf_file) {
 	static Configor configor;
 
 	if (false == configor.ready()) {
@@ -46,19 +46,19 @@ bool Configor::Reg(ConfigRegInfo& reg_info) {
 	return true;
 }
 
-bool Configor::Init(std::string& conf_file) {
+bool Configor::Init(const char* conf_file) {
 
-	ConfigRegInfo reg_info((void*)this, conf_file, Reload);
+	std::string __conf_file(conf_file);
+	ConfigRegInfo reg_info((void*)this, __conf_file, Reload);
 
 	if (true != reg_info.IsValid()) {
 		return true;
 	}
-
 	if (false == Reg(reg_info)) {
 		return false;
 	}
 
-	if (false == Reload(this, conf_file)) {
+	if (false == Reload(this, __conf_file)) {
 		return false;
 	}
 

@@ -60,7 +60,7 @@ class Configor {
 		int32_t				retry_max_times_;
 	};
 
-	bool Init(std::string& conf_file);
+	bool Init(const char* conf_file);
 
 	static bool IsFileUpdated(std::string& file, uint32_t last_time, uint32_t& new_time);
 
@@ -69,7 +69,7 @@ class Configor {
 	static bool Reload(void*, std::string&);
 
  public:
-	static Configor& GetInstance(std::string& conf_file);
+	static Configor& GetInstance(const char* conf_file);
 
 	bool IsReady() {
 		return ready_;
