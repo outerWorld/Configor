@@ -1,0 +1,105 @@
+
+#include "ini_file.h"
+
+#include "configor.h"
+
+std::string Configor::name_("Configor");
+std::string Configor::desc_("a management module for configuration");
+
+Configor::Configor() {
+	pthread_mutex_init(&reg_locker_, NULL);
+	cur_config_index_ = 0;
+}
+
+Configor::~Configor() {
+}
+
+Configor* Configor::GetInstance(std::string& conf_file) {
+	static Configor* configor = NULL;
+
+	if (NULL == configor) {
+		configor = new Configor();
+		bool ret = configor->Init(conf_file); 
+		if (true != ret) {
+			delete configor;
+			configor = NULL;
+		}
+	}
+
+	return configor;
+}
+
+bool Configor::Init(std::string& conf_file) {
+
+	ConfigRegInfo reg_info((void*)this, conf_file, Reload);
+
+	if (true != reg_info.IsValid()) {
+		return true;
+	}
+
+	if (false == Reg(reg_info)) {
+		return false;
+	}
+
+	if (0 != pthread_create(&check_tid_, NULL, CheckCb, this)) {
+		return false;
+	}
+
+	return true;
+}
+
+bool Configor::IsFileUpdated(std::string& file, uint32_t last_time, uint32_t& new_time) {
+	struct stat st;
+		
+	if (0 != stat(file.c_str(), &st)) {
+		return false;
+	}
+
+	new_time = st.st_mtime;
+	if (new_time == last_time) {
+		return false;
+	}
+
+	return true;
+}
+
+void * Configor::CheckCb(void *arg) {
+	Configor *configor = (Configor*)arg;
+
+	// As the Configuration of Configor is managed by itself, the data of Configor must be accessed by Configor object!!!
+	bool b_ret = false;
+	uint32_t file_new_time = 0;
+	while (1) {
+		std::vector<ConfigRegInfo>::iterator iter = configor->regs_.begin();
+		for (; iter != configor->regs_.end(); ++iter) {
+			b_ret = IsFileUpdated(iter->config_file_, iter->last_time_, file_new_time);
+			if (false == b_ret) {
+				continue;
+			}
+			for (int32_t retry_times = 0; retry_times < configor->configs(configor->cur_config_index()).retry_max_times_; ++retry_times) {
+				if (true == iter->reload_func_(iter->param_, iter->config_file_)) {
+					iter->last_time_ = file_new_time;
+					break;
+				}
+				usleep(configor->configs(configor->cur_config_index()).retry_interval_us_);
+			}
+		}
+
+		usleep(configor->configs(configor->cur_config_index()).check_interval_us_);
+	}
+
+	return NULL;
+}
+
+bool Configor::Reload(void* param, std::string& conf_file) {
+	Configor *configor = (Configor*)param;
+	IniFile reader;
+
+	if (true != reader.Init(conf_file)) {
+		return false;
+	}
+
+	configor->NextConfigIndex();
+
+	return true;
+}
