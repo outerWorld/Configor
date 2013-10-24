@@ -22,7 +22,7 @@ class ConfigRegInfo {
 	// it can solve the problem that a class use static function
 	// as the callback function, so it works with single model.
 	// for double buffer, the caller must change index of running configuration itself.
-	typedef bool (*ReloadFunc)(void *param, std::string& conf_file);
+	typedef bool (*ReloadFunc)(void *param, const std::string& conf_file);
 
  public:
 	ConfigRegInfo(void *param, std::string& config_file, ReloadFunc func) : param_(param), config_file_(config_file), reload_func_(func) {
