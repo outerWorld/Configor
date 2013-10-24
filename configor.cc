@@ -113,7 +113,7 @@ void * Configor::CheckCb(void *arg) {
 	return NULL;
 }
 
-bool Configor::Reload(void* param, std::string& conf_file) {
+bool Configor::Reload(void* param, const std::string& conf_file) {
 	Configor *configor = (Configor*)param;
 	IniFile reader;
 

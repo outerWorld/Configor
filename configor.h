@@ -66,7 +66,7 @@ class Configor {
 
 	static void * CheckCb(void *);
 
-	static bool Reload(void*, std::string&);
+	static bool Reload(void*, const std::string&);
 
  public:
 	static Configor& GetInstance(const char* conf_file);
