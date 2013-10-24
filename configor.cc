@@ -29,6 +29,21 @@ Configor* Configor::GetInstance(std::string& conf_file) {
 	return configor;
 }
 
+
+bool Configor::Reg(ConfigRegInfo& reg_info) {
+	if (0 != pthread_mutex_lock(&reg_locker_)) {
+		return false;
+	}
+
+	// the usage of "do {}while(0);" is to make every invalid condition can go to the end and execute pthread_mutex_unlock
+	do {
+		regs_.push_back(reg_info);
+	} while (0);
+
+	pthread_mutex_unlock(&reg_locker_);
+	return true;
+}
+
 bool Configor::Init(std::string& conf_file) {
 
 	ConfigRegInfo reg_info((void*)this, conf_file, Reload);
@@ -38,6 +53,10 @@ bool Configor::Init(std::string& conf_file) {
 	}
 
 	if (false == Reg(reg_info)) {
+		return false;
+	}
+
+	if (false == Reload(this, conf_file)) {
 		return false;
 	}
 
@@ -66,7 +85,8 @@ bool Configor::IsFileUpdated(std::string& file, uint32_t last_time, uint32_t& ne
 void * Configor::CheckCb(void *arg) {
 	Configor *configor = (Configor*)arg;
 
-	// As the Configuration of Configor is managed by itself, the data of Configor must be accessed by Configor object!!!
+	// As the Configuration of Configor is managed by itself,
+	// the data of Configor must be accessed by Configor object!!!
 	bool b_ret = false;
 	uint32_t file_new_time = 0;
 	while (1) {
@@ -98,8 +118,20 @@ bool Configor::Reload(void* param, std::string& conf_file) {
 	if (true != reader.Init(conf_file)) {
 		return false;
 	}
+	
+	// !0 = 1 , !1 = 0, so the index of current configuration is range of [0, 1].
+	int32_t next_index = !configor->cur_config_index();
+	uint32_t value = 0;
+	Config& config = configor->configs(next_index);
 
-	configor->NextConfigIndex();
+	config.check_interval_us_ = reader.Get("Configor", "check_interval", 10000000);
+
+	config.retry_max_times_ = reader.Get("Configor", "retry_max_times", 3);
+
+	config.retry_interval_us_ = reader.Get("Configor", "retry_interval", 10000);
+
+
+	configor->set_cur_config_index(next_index);
 
 	return true;
 }

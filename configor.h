@@ -5,12 +5,15 @@
 #ifndef __CONFIGOR_H
 #define __CONFIGOR_H
 
+#include <stdint.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
 #include <pthread.h>
 
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -80,6 +83,19 @@ class Configor {
 	}
 
 	static std::string& name() { return Configor::name_; }
+
+	void Status() {
+		std::cout << "Configor name is " << Configor::name_ << std::endl;
+		std::cout << "current configure index is " << cur_config_index_ << std::endl;
+		std::cout << "\tCheck interval = " << configs_[cur_config_index_].check_interval_us_ << " (us)" << std::endl;
+		std::cout << "\tretry max times = " << configs_[cur_config_index_].retry_max_times_ << std::endl;
+		std::cout << "\tretry interval = " << configs_[cur_config_index_].retry_interval_us_ << " (us)" << std::endl;
+		std::vector<ConfigRegInfo>::iterator iter = regs_.begin();
+		for (; iter != regs_.end(); ++iter) {
+			std::cout << "Registed: " << iter->config_file_ << std::endl;
+		}
+		std::cout << std::endl;
+	}
 
  private:
 	Configor();
