@@ -40,6 +40,7 @@ class ConfigRegInfo {
 		if (!S_ISREG(st.st_mode)) {
 			return false;
 		}
+		last_time_ = st.st_mtime;
 
 		return true;
 	}

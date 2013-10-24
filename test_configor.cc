@@ -14,6 +14,9 @@ int main(int argc, char *argv[]) {
 	std::string conf_file(argv[1]);
 
 	Configor& config = Configor::GetInstance(conf_file);
+	if (false == config.IsReady()) {
+		return 1;
+	}
 
 	std::cout << "after GetInstance of Configor" << std::endl;
 	while (1) {
