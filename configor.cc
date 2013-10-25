@@ -52,7 +52,7 @@ bool Configor::Init(const char* conf_file) {
 	ConfigRegInfo reg_info((void*)this, __conf_file, Reload);
 
 	if (true != reg_info.IsValid()) {
-		return true;
+		return false;
 	}
 	if (false == Reg(reg_info)) {
 		return false;
