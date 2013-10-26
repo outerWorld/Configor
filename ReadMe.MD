@@ -6,8 +6,7 @@ Email:  chunping.huang.china@gmail.com
 Description
 -----------
 	Configor is a small class written by C++(C++11 is supported), it works on singleton model.
-	I wrote this class for conveniency when i want dynamical configuration
-loading in my program.
+	I wrote this class for conveniency when i want dynamical configuration loading in my program.
 
 History
 -------
